@@ -17,6 +17,7 @@
 		E39B1C281F06284400EA7547 /* float4x4+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3C9203D1F06222C0013F969 /* float4x4+Extensions.swift */; };
 		E39B1C291F06284700EA7547 /* BufferProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3C920391F06222C0013F969 /* BufferProvider.swift */; };
 		E39B1C2A1F0628C000EA7547 /* art.scnassets in Resources */ = {isa = PBXBuildFile; fileRef = E3C920381F06221D0013F969 /* art.scnassets */; };
+		E39B1C2C1F06298700EA7547 /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = E39B1C2B1F06298000EA7547 /* README.md */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,6 +28,7 @@
 		E35B832E1F061FDE002821DD /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		E35B83301F061FDE002821DD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		E37F6CFB1F0625990039CB81 /* MainViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
+		E39B1C2B1F06298000EA7547 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = CubesInSpace/README.md; sourceTree = "<group>"; };
 		E3C920381F06221D0013F969 /* art.scnassets */ = {isa = PBXFileReference; lastKnownFileType = wrapper.scnassets; path = art.scnassets; sourceTree = "<group>"; };
 		E3C920391F06222C0013F969 /* BufferProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BufferProvider.swift; sourceTree = "<group>"; };
 		E3C9203A1F06222C0013F969 /* Light.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Light.swift; sourceTree = "<group>"; };
@@ -49,6 +51,7 @@
 		E35B83181F061FDE002821DD = {
 			isa = PBXGroup;
 			children = (
+				E39B1C2B1F06298000EA7547 /* README.md */,
 				E35B83231F061FDE002821DD /* CubesInSpace */,
 				E35B83221F061FDE002821DD /* Products */,
 			);
@@ -156,6 +159,7 @@
 				E39B1C261F06283E00EA7547 /* SCNVector3Extensions.swift in Sources */,
 				E37F6CFC1F0625990039CB81 /* MainViewController.swift in Sources */,
 				E39B1C291F06284700EA7547 /* BufferProvider.swift in Sources */,
+				E39B1C2C1F06298700EA7547 /* README.md in Sources */,
 				E39B1C271F06284100EA7547 /* Light.swift in Sources */,
 				E39B1C281F06284400EA7547 /* float4x4+Extensions.swift in Sources */,
 				E35B83251F061FDE002821DD /* AppDelegate.swift in Sources */,
