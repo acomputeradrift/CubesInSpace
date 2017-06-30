@@ -6,7 +6,7 @@ This project borrows heavily from the ARBrush for SCNVector 3 extensions and ini
 Changed to fit the purpose of including SceneKit Content
 
 
-![CubesInSpace Demot](./cube.gif)
+![CubesInSpace Demot](https://g.redditmedia.com/g7hPJQO7gUG_KTe1Z9Ahh_BtTuLK5_mqTZ4Ho13b9IA.gif?fm=mp4&mp4-fragmented=false&s=baab3005009d52c1b919a902d3cabc83)
 
 
 
