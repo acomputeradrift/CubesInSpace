@@ -50,6 +50,7 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
     var lastSpawn = CFAbsoluteTimeGetCurrent()
     var gravityField = SCNPhysicsField.linearGravity()
     var gravityActivated = false
+    var planeArray = [SCNNode]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -86,8 +87,24 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
         
         let groundShape = SCNPhysicsShape(geometry: groundGeometry, options: nil)
         let groundBody = SCNPhysicsBody(type: .kinematic, shape: groundShape)
+        groundBody.restitution = 0
+        groundBody.isAffectedByGravity = false
         ground.physicsBody = groundBody
         
+        /*
+        var light = SCNLight()
+        
+        var lightNode = SCNNode();
+        
+        lightNode.light = light;
+        lightNode.light?.type = .omni
+        lightNode.light?.color = UIColor.yellow
+        
+        lightNode.position = getPointerPosition().pos
+        lightNode.orientation = getPointerPosition().camPos*/
+        
+        //sceneView.scene.rootNode.addChildNode (lightNode);
+        sceneView.automaticallyUpdatesLighting = true
         
         gravityField.direction = SCNVector3(0,0,0);
         gravityField.strength = 0.0
@@ -119,6 +136,8 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
         
         // Create a session configuration
         let configuration = ARWorldTrackingSessionConfiguration()
+        configuration.planeDetection = .horizontal
+        
         
         // Run the view's session
         sceneView.session.run(configuration)
@@ -168,7 +187,7 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
         
         if gravityActivated {
             gravityField.direction = SCNVector3(0,-1,0);
-            gravityField.strength = 0.0005
+            gravityField.strength = 0.005
             gravityActivated = false
             addPointButton.setBackgroundImage(UIImage.init(named: "stop" ), for: .normal)
             
@@ -196,7 +215,7 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
     func spawnShape(point: SCNVector3) {
         
         let currentTime = CFAbsoluteTimeGetCurrent()
-        if  currentTime - lastSpawn > 0.1 {
+        if  currentTime - lastSpawn > 0.6 {
             // 1
             /*var geometry:SCNGeometry
              // 2
@@ -208,9 +227,20 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
             // 4
             
             
-            let shape = SCNPhysicsShape(geometry: SCNBox(width: 0.01, height: 0.01, length: 0.01, chamferRadius: 0), options: nil)
+            let shape = SCNPhysicsShape(geometry: SCNBox(width: 0.1, height: 0.1, length: 0.1, chamferRadius: 0), options: nil)
             let cubeBody = SCNPhysicsBody(type: .dynamic, shape: shape)
-            let geometryNode = SCNNode(geometry: SCNBox(width: 0.01, height: 0.01, length: 0.01, chamferRadius: 0))//SCNNode(geometry: geometry)
+            cubeBody.restitution = 0
+            //SCNNode(geometry: geometry)
+            
+            let cubeGeometry = SCNBox(width: 0.1, height: 0.1, length: 0.1, chamferRadius: 0)
+            let boxMaterial = SCNMaterial()
+            boxMaterial.diffuse.contents = UIImage(named: "crate")
+            boxMaterial.locksAmbientWithDiffuse = true;
+            
+            cubeGeometry.materials = [boxMaterial]
+            
+            let geometryNode = SCNNode(geometry: cubeGeometry)
+            
             geometryNode.position = point
             geometryNode.physicsBody = cubeBody
             
@@ -218,7 +248,7 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
                 //Toggle this to shoot cubes out of the screen
             //geometryNode.physicsBody!.velocity = self.getUserVector()
             
-            geometryNode.physicsBody!.angularVelocity = SCNVector4Make(-1, 0, 0, Float(Double.pi/4));
+            //geometryNode.physicsBody!.angularVelocity = SCNVector4Make(-1, 0, 0, Float(Double.pi/4));
             geometryNode.physicsField = gravityField
             geometryNode.physicsBody?.isAffectedByGravity = false
             
@@ -231,6 +261,36 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
         }
         
         
+    }
+    
+    func createPlaneNode(anchor: ARPlaneAnchor) -> SCNNode? {
+        // Create a SceneKit plane to visualize the node using its position and extent.
+        // Create the geometry and its materials
+        let plane = SCNPlane(width: CGFloat(anchor.extent.x), height: CGFloat(anchor.extent.z))
+        
+        let gridImage = UIImage(named: "grid")
+        let gridMaterial = SCNMaterial()
+        gridMaterial.diffuse.contents = gridImage
+        gridMaterial.isDoubleSided = true
+        
+        plane.materials = [gridMaterial]
+        
+        // Create a node with the plane geometry we created
+        let planeNode = SCNNode(geometry: plane)
+        planeNode.position = SCNVector3Make(anchor.center.x, 0, anchor.center.z)
+        
+        //Create a physics body so that our particles can interact with the plane
+        let planeBody = SCNPhysicsBody(type: .kinematic, shape: SCNPhysicsShape.init(node: planeNode))
+        planeBody.restitution = 0
+        planeNode.physicsBody = planeBody
+        planeNode.physicsBody!.isAffectedByGravity = false
+        
+        
+        // SCNPlanes are vertically oriented in their local coordinate space.
+        // Rotate it to match the horizontal orientation of the ARPlaneAnchor.
+        planeNode.transform = SCNMatrix4MakeRotation(-Float.pi / 2, 1, 0, 0)
+        
+        return planeNode
     }
     
     func getUserVector() -> (SCNVector3) { // (direction, position)
@@ -259,6 +319,8 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
     
     //var prevTime : TimeInterval = -1
     
+    
+    
     func renderer(_ renderer: SCNSceneRenderer, updateAtTime time: TimeInterval) {
         
         if ( buttonDown ) {
@@ -270,8 +332,51 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
         
         frameIdx = frameIdx + 1
         
+        
+        
+        
     }
     
+    func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
+        
+        guard let planeAnchor = anchor as? ARPlaneAnchor else { return }
+        
+        
+        if let planeNode = createPlaneNode(anchor: planeAnchor) {
+            // ARKit owns the node corresponding to the anchor, so make the plane a child node.
+        
+            node.addChildNode(planeNode)
+            planeArray.append(planeNode)
+        }
+    }
+
+    func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
+        
+        guard let planeAnchor = anchor as? ARPlaneAnchor else {return}
+        
+        // Remove existing plane nodes
+        for plane in planeArray {
+            plane.removeFromParentNode()
+        }
+        
+        if let planeNode = createPlaneNode(anchor: planeAnchor) {
+        
+            node.addChildNode(planeNode)
+            planeArray.append(planeNode)
+        }
+        
+    }
+    
+    func renderer(_ renderer: SCNSceneRenderer, didRemove node: SCNNode, for anchor: ARAnchor) {
+        
+        guard anchor is ARPlaneAnchor else { return }
+        
+        // Remove existing plane nodes
+        for plane in planeArray {
+            plane.removeFromParentNode()
+        }
+    }
+
     func renderer(_ renderer: SCNSceneRenderer, didRenderScene scene: SCNScene, atTime time: TimeInterval) {
         
         /*
@@ -294,7 +399,7 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
     }
     
     func sessionWasInterrupted(_ session: ARSession) {
-        // Inform the user that the session has been interrupted, for example, by presenting an overlay
+        // Inform the user that the session has been interrupted, for examee, by presenting an overlay
         
     }
     
