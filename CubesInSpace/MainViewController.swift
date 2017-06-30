@@ -1,5 +1,5 @@
 //
-//  ARController.swift
+//  MainController.swift
 //  CubesInSpace
 //
 //  Created by Ryan Pasecky on 6/29/17.
@@ -24,22 +24,11 @@ func getRoundyButton(size: CGFloat = 100,
     
     let button = UIButton(frame: CGRect.init(x: 0, y: 0, width: size, height: size))
     button.clipsToBounds = true
-    button.layer.cornerRadius = size / 2
-    
-    let gradient: CAGradientLayer = CAGradientLayer()
-    
-    gradient.colors = [colorTop.cgColor, colorBottom.cgColor]
-    gradient.startPoint = CGPoint(x: 1.0, y: 1.0)
-    gradient.endPoint = CGPoint(x: 0.0, y: 0.0)
-    gradient.frame = button.bounds
-    gradient.cornerRadius = size / 2
-    
-    button.layer.insertSublayer(gradient, at: 0)
     
     let image = UIImage.init(named: imageName )
     let imgView = UIImageView.init(image: image)
     imgView.center = CGPoint.init(x: button.bounds.size.width / 2.0, y: button.bounds.size.height / 2.0 )
-    button.addSubview(imgView)
+    button.setBackgroundImage(image, for: .normal)
     
     return button
     
@@ -59,6 +48,8 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
     var splitLine = false
     var lineRadius : Float = 0.001
     var lastSpawn = CFAbsoluteTimeGetCurrent()
+    var gravityField = SCNPhysicsField.linearGravity()
+    var gravityActivated = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -76,7 +67,7 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
         // Set the scene to the view
         sceneView.scene = scene
         
-        //addButton()
+        addButton()
         
         //self.view.addGestureRecognizer(UIGestureRecognizer.)
         let tap = UILongPressGestureRecognizer(target: self, action: #selector(tapHandler))
@@ -91,20 +82,17 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
         groundMaterial.diffuse.contents = UIColor.clear
         groundGeometry.materials = [groundMaterial]
         ground = SCNNode(geometry: groundGeometry)
-        ground.position = sceneView.scene.rootNode.position //- SCNVector3(0,1.5,0)
+        ground.position = sceneView.scene.rootNode.position - SCNVector3(0,1.5,0)
         
         let groundShape = SCNPhysicsShape(geometry: groundGeometry, options: nil)
         let groundBody = SCNPhysicsBody(type: .kinematic, shape: groundShape)
         ground.physicsBody = groundBody
         
         
+        gravityField.direction = SCNVector3(0,0,0);
+        gravityField.strength = 0.0
         
         sceneView.scene.rootNode.addChildNode(ground)
-        
-        /*
-         let cubeNode = SCNNode(geometry: SCNBox(width: 0.1, height: 0.1, length: 0.1, chamferRadius: 0))
-         cubeNode.position = SCNVector3(0, 0, -0.2) // SceneKit/AR coordinates are in meters
-         sceneView.scene.rootNode.addChildNode(cubeNode)*/
         
     }
     
@@ -163,19 +151,38 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
         //let c1 = UIColor(red: 112.0/255.0, green: 219.0/255.0, blue: 155.0/255.0, alpha: 1.0)
         //let c2 = UIColor(red: 86.0/255.0, green: 197.0/255.0, blue: 238.0/255.0, alpha: 1.0)
         
-        addPointButton = getRoundyButton(size: 60, imageName: "stop", c1, c2)
+        addPointButton = getRoundyButton(size: 60, imageName: "plus", c1, c2)
         //addPointButton.setTitle("+", for: UIControlState.normal)
         
         self.view.addSubview(addPointButton)
-        addPointButton.center = CGPoint.init(x: sw / 2.0, y: 120 )
-        //addPointButton.addTarget(self, action:#selector(self.buttonTouchDown), for: .touchDown)
-        //addPointButton.addTarget(self, action:#selector(self.clearDrawing), for: .touchUpInside)
-        //addPointButton.addTarget(self, action:#selector(self.buttonTouchUp), for: .touchUpOutside)
+        
+        let buttonXPosition = CGFloat(40.0)
+        let buttonYPosition = sh - 40
+        addPointButton.center = CGPoint.init(x: buttonXPosition, y: buttonYPosition )
+        addPointButton.addTarget(self, action:#selector(self.toggleGravity), for: .touchUpInside)
         
     }
     
     
-    
+    @objc func toggleGravity() {
+        
+        if gravityActivated {
+            gravityField.direction = SCNVector3(0,-1,0);
+            gravityField.strength = 0.0005
+            gravityActivated = false
+            addPointButton.setBackgroundImage(UIImage.init(named: "stop" ), for: .normal)
+            
+            
+        }   else {
+            gravityField.direction = SCNVector3(0,0,0);
+            gravityField.strength = 0.0
+            gravityActivated = true
+            addPointButton.setBackgroundImage(UIImage.init(named: "plus" ), for: .normal)
+            
+            
+        }
+        
+    }
     
     
     @objc func buttonTouchDown() {
@@ -206,12 +213,13 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
             let geometryNode = SCNNode(geometry: SCNBox(width: 0.01, height: 0.01, length: 0.01, chamferRadius: 0))//SCNNode(geometry: geometry)
             geometryNode.position = point
             geometryNode.physicsBody = cubeBody
+            
+            
+                //Toggle this to shoot cubes out of the screen
             //geometryNode.physicsBody!.velocity = self.getUserVector()
-            geometryNode.physicsBody!.angularVelocity = SCNVector4Make(1, 1, 1, Float(Double.pi/4));
-            /*let gravityField = SCNPhysicsField.linearGravity()
-             gravityField.direction = SCNVector3(0,-1,0);
-             gravityField.strength = 0.01
-             geometryNode.physicsField = gravityField*/
+            
+            geometryNode.physicsBody!.angularVelocity = SCNVector4Make(-1, 0, 0, Float(Double.pi/4));
+            geometryNode.physicsField = gravityField
             geometryNode.physicsBody?.isAffectedByGravity = false
             
             sceneView.scene.rootNode.addChildNode(geometryNode)

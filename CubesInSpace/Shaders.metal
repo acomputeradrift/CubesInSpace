@@ -47,7 +47,7 @@ struct Light {
   float diffuseIntensity;   // 7
   float shininess;          // 8
   float specularIntensity;  // 9
-    float time;
+  float time;
   
   /*
    _______________________
