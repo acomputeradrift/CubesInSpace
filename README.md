@@ -20,7 +20,7 @@ Thanks to RayWenderlich for some SceneKit Pointers. Check them out [HERE]( https
 This function should be thrown in with all of your other initialization code in 'viewDidLoad()' 
 
 
-'''
+```swift
 func setupPhoneNode() {
         
         
@@ -48,12 +48,12 @@ func setupPhoneNode() {
         
         
     }
-'''
+```
 
 First you need to get the position and orientation of your device. Here's a function to do just that. 
 
 
-'''
+```swift
 
 func getPositionRelativeToCameraView(distance: Float) -> (position: SCNVector3, rotation: SCNVector4) {
         var x = Float()
@@ -72,14 +72,14 @@ func getPositionRelativeToCameraView(distance: Float) -> (position: SCNVector3, 
         return (position, rotation)
     }
 
-'''
+```
 
 
 For usability reasons, I traced a vector normal from the phones screen by about 10 cm. 
 
 Apply this code to your phone node during your regular update cycle. In my case: 'renderer(_ renderer: SCNSceneRenderer, updateAtTime time: TimeInterval)'
 
-'''swift
+```swift
 
 func updatePhoneNode() {
         
@@ -89,11 +89,11 @@ func updatePhoneNode() {
         phoneNode.rotation = getPointerPosition().camPos
       
     }
-'''
+```
 
 
 ## Create blocks in 3-D Space:
-'''
+```swift
 func spawnShape(point: SCNVector3, size: CGFloat) {
         
         let currentTime = CFAbsoluteTimeGetCurrent()
@@ -131,7 +131,6 @@ func spawnShape(point: SCNVector3, size: CGFloat) {
         
         
     }
-
-As 
+```
 
 
