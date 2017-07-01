@@ -13,9 +13,6 @@
 		E35B832F1F061FDE002821DD /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E35B832D1F061FDE002821DD /* LaunchScreen.storyboard */; };
 		E37F6CFC1F0625990039CB81 /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E37F6CFB1F0625990039CB81 /* MainViewController.swift */; };
 		E39B1C261F06283E00EA7547 /* SCNVector3Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3C9203B1F06222C0013F969 /* SCNVector3Extensions.swift */; };
-		E39B1C271F06284100EA7547 /* Light.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3C9203A1F06222C0013F969 /* Light.swift */; };
-		E39B1C281F06284400EA7547 /* float4x4+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3C9203D1F06222C0013F969 /* float4x4+Extensions.swift */; };
-		E39B1C291F06284700EA7547 /* BufferProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3C920391F06222C0013F969 /* BufferProvider.swift */; };
 		E39B1C2A1F0628C000EA7547 /* art.scnassets in Resources */ = {isa = PBXBuildFile; fileRef = E3C920381F06221D0013F969 /* art.scnassets */; };
 		E39B1C2C1F06298700EA7547 /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = E39B1C2B1F06298000EA7547 /* README.md */; };
 		E39B1C301F06329B00EA7547 /* plus@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E39B1C2E1F06329400EA7547 /* plus@2x.png */; };
@@ -174,10 +171,7 @@
 			files = (
 				E39B1C261F06283E00EA7547 /* SCNVector3Extensions.swift in Sources */,
 				E37F6CFC1F0625990039CB81 /* MainViewController.swift in Sources */,
-				E39B1C291F06284700EA7547 /* BufferProvider.swift in Sources */,
 				E39B1C2C1F06298700EA7547 /* README.md in Sources */,
-				E39B1C271F06284100EA7547 /* Light.swift in Sources */,
-				E39B1C281F06284400EA7547 /* float4x4+Extensions.swift in Sources */,
 				E35B83251F061FDE002821DD /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
