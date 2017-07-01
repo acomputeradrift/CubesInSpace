@@ -6,7 +6,7 @@ This project borrows heavily from the ARBrush for SCNVector 3 extensions and ini
 Changed to fit the purpose of including SceneKit Content
 
 
-![CubesInSpace Demo](./cube.gif)
+![CubesInSpace Demo](./paddleDemo.gif)
 
 
 
