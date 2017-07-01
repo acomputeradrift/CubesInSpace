@@ -21,6 +21,9 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
     
     @IBOutlet var sceneView: ARSCNView!
     
+    
+    // MARK: - Properties
+    
     var buttonDown = false
     var addPointButton : UIButton!
     var frameIdx = 0
@@ -33,6 +36,7 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
     var phoneNode: SCNNode!
     var ground: SCNNode!
 
+    // MARK: - View life cycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -141,6 +145,9 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
         // Release any cached data, images, etc that aren't in use.
     }
     
+    
+    // MARK: - Initialization
+    
     func addButton() {
         
         let sw = self.view.bounds.size.width
@@ -165,6 +172,67 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
         addPointButton.addTarget(self, action:#selector(self.toggleGravity), for: .touchUpInside)
         
     }
+    
+    func createPlaneNode(anchor: ARPlaneAnchor) -> SCNNode? {
+        // Create a SceneKit plane to visualize the node using its position and extent.
+        // Create the geometry and its materials
+        let plane = SCNPlane(width: CGFloat(anchor.extent.x), height: CGFloat(anchor.extent.z))
+        
+        let gridImage = UIImage(named: "grid")
+        let gridMaterial = SCNMaterial()
+        gridMaterial.diffuse.contents = gridImage
+        gridMaterial.isDoubleSided = true
+        
+        plane.materials = [gridMaterial]
+        
+        // Create a node with the plane geometry we created
+        let planeNode = SCNNode(geometry: plane)
+        planeNode.position = SCNVector3Make(anchor.center.x, 0, anchor.center.z)
+        
+        //Create a physics body so that our particles can interact with the plane
+        let planeBody = SCNPhysicsBody(type: .kinematic, shape: SCNPhysicsShape.init(node: planeNode))
+        planeBody.restitution = 0
+        planeNode.physicsBody = planeBody
+        planeNode.physicsBody!.isAffectedByGravity = false
+        
+        
+        // SCNPlanes are vertically oriented in their local coordinate space.
+        // Rotate it to match the horizontal orientation of the ARPlaneAnchor.
+        planeNode.transform = SCNMatrix4MakeRotation(-Float.pi / 2, 1, 0, 0)
+        
+        return planeNode
+    }
+    
+    func setupPhoneNode() {
+        
+        
+        let shape = SCNPhysicsShape(geometry: SCNBox(width: 0.0485, height: 0.1, length: 0.0049, chamferRadius: 0), options: nil)
+        let cubeBody = SCNPhysicsBody(type: .kinematic, shape: shape)
+        cubeBody.restitution = 0
+        
+        let cubeGeometry = SCNBox(width: 0.04, height: 0.1, length: 0.01, chamferRadius: 0)
+        let boxMaterial = SCNMaterial()
+        boxMaterial.diffuse.contents = UIColor.clear
+        boxMaterial.locksAmbientWithDiffuse = true;
+        
+        cubeGeometry.materials = [boxMaterial]
+        
+        phoneNode = SCNNode(geometry: cubeGeometry)
+        
+        var phoneLocation = getPointerPosition().pos
+        
+        //Move in front of screen
+        phoneNode.position = getPositionRelativeToCameraView(distance: 0.0)
+        phoneNode.position = phoneLocation
+        phoneNode.physicsBody = cubeBody
+        
+        sceneView.scene.rootNode.addChildNode(phoneNode)
+        
+        
+    }
+    
+    
+    // MARK: - Controls
     
     
     @objc func toggleGravity() {
@@ -230,7 +298,7 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
             geometryNode.physicsBody = cubeBody
             
             
-                //Toggle this to shoot cubes out of the screen
+            //Toggle this to shoot cubes out of the screen
             geometryNode.physicsBody!.velocity = self.getUserVector()
             
             geometryNode.physicsBody!.angularVelocity = SCNVector4Make(-1, 0, 0, Float(Double.pi/16));
@@ -248,86 +316,11 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
         
     }
     
-    func createPlaneNode(anchor: ARPlaneAnchor) -> SCNNode? {
-        // Create a SceneKit plane to visualize the node using its position and extent.
-        // Create the geometry and its materials
-        let plane = SCNPlane(width: CGFloat(anchor.extent.x), height: CGFloat(anchor.extent.z))
-        
-        let gridImage = UIImage(named: "grid")
-        let gridMaterial = SCNMaterial()
-        gridMaterial.diffuse.contents = gridImage
-        gridMaterial.isDoubleSided = true
-        
-        plane.materials = [gridMaterial]
-        
-        // Create a node with the plane geometry we created
-        let planeNode = SCNNode(geometry: plane)
-        planeNode.position = SCNVector3Make(anchor.center.x, 0, anchor.center.z)
-        
-        //Create a physics body so that our particles can interact with the plane
-        let planeBody = SCNPhysicsBody(type: .kinematic, shape: SCNPhysicsShape.init(node: planeNode))
-        planeBody.restitution = 0
-        planeNode.physicsBody = planeBody
-        planeNode.physicsBody!.isAffectedByGravity = false
-        
-        
-        // SCNPlanes are vertically oriented in their local coordinate space.
-        // Rotate it to match the horizontal orientation of the ARPlaneAnchor.
-        planeNode.transform = SCNMatrix4MakeRotation(-Float.pi / 2, 1, 0, 0)
-        
-        return planeNode
-    }
     
-    func setupPhoneNode() {
-        
-            
-        let shape = SCNPhysicsShape(geometry: SCNBox(width: 0.0485, height: 0.1, length: 0.0049, chamferRadius: 0), options: nil)
-        let cubeBody = SCNPhysicsBody(type: .kinematic, shape: shape)
-        cubeBody.restitution = 0
-        
-        let cubeGeometry = SCNBox(width: 0.04, height: 0.1, length: 0.01, chamferRadius: 0)
-        let boxMaterial = SCNMaterial()
-        boxMaterial.diffuse.contents = UIColor.clear
-        boxMaterial.locksAmbientWithDiffuse = true;
-        
-        cubeGeometry.materials = [boxMaterial]
-        
-        phoneNode = SCNNode(geometry: cubeGeometry)
-        
-        var phoneLocation = getPointerPosition().pos
-        
-        //Move in front of screen
-        phoneNode.position = getPositionRelativeToCameraView(distance: 0.0)
-        phoneNode.position = phoneLocation
-        phoneNode.physicsBody = cubeBody
-        
-        sceneView.scene.rootNode.addChildNode(phoneNode)
-        
-        
-    }
     
-    func updatePhoneNode() {
-        
-        let phonePositionInformation = getPointerPosition()
-        //Move in front of screen
-        phoneNode.position = getPositionRelativeToCameraView(distance: 0.1)
-        
-        phoneNode.rotation = phonePositionInformation.camPos
-        
-    }
     
-    func getUserVector() -> (SCNVector3) { // (direction, position)
-        if let frame = self.sceneView.session.currentFrame {
-            let mat = SCNMatrix4(frame.camera.transform) // 4x4 transform matrix describing camera in world space
-            
-            let vMult = 0.01
-            let dir = SCNVector3(-Float(vMult) * mat.m31, -Float(vMult) * mat.m32, -Float(vMult) * mat.m33) // orientation of camera in world space
-            let pos = SCNVector3(mat.m41, mat.m42, mat.m43) // location of camera in world space
-            
-            return (dir)
-        }
-        return (SCNVector3(0, 0, -1))
-    }
+    
+    
     
     
     
@@ -346,6 +339,7 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
     
     
     
+    
     func renderer(_ renderer: SCNSceneRenderer, updateAtTime time: TimeInterval) {
         
         if ( buttonDown ) {
@@ -357,6 +351,16 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
         updatePhoneNode()
         
         frameIdx = frameIdx + 1
+    }
+    
+    func updatePhoneNode() {
+        
+        let phonePositionInformation = getPointerPosition()
+        //Move in front of screen
+        phoneNode.position = getPositionRelativeToCameraView(distance: 0.1)
+        
+        phoneNode.rotation = phonePositionInformation.camPos
+        
     }
     
     func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
@@ -445,6 +449,19 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
         
         return (currentPosition, true, pointOfView.rotation)
         
+    }
+    
+    func getUserVector() -> (SCNVector3) { // (direction, position)
+        if let frame = self.sceneView.session.currentFrame {
+            let mat = SCNMatrix4(frame.camera.transform) // 4x4 transform matrix describing camera in world space
+            
+            let vMult = 0.01
+            let dir = SCNVector3(-Float(vMult) * mat.m31, -Float(vMult) * mat.m32, -Float(vMult) * mat.m33) // orientation of camera in world space
+            let pos = SCNVector3(mat.m41, mat.m42, mat.m43) // location of camera in world space
+            
+            return (dir)
+        }
+        return (SCNVector3(0, 0, -1))
     }
     
     func getPositionRelativeToCameraView(distance: Float) -> SCNVector3 {
