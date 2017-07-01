@@ -219,11 +219,9 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
         
         phoneNode = SCNNode(geometry: cubeGeometry)
         
-        var phoneLocation = getPointerPosition().pos
         
         //Move in front of screen
-        phoneNode.position = getPositionRelativeToCameraView(distance: 0.0)
-        phoneNode.position = phoneLocation
+        phoneNode.position = getPositionRelativeToCameraView(distance: 0.0).position
         phoneNode.physicsBody = cubeBody
         
         sceneView.scene.rootNode.addChildNode(phoneNode)
@@ -294,7 +292,7 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
             let geometryNode = SCNNode(geometry: cubeGeometry)
             
             
-            geometryNode.position = getPositionRelativeToCameraView(distance: 0.201)
+            geometryNode.position = getPositionRelativeToCameraView(distance: 0.201).position
             geometryNode.physicsBody = cubeBody
             
             
@@ -355,12 +353,10 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
     
     func updatePhoneNode() {
         
-        let phonePositionInformation = getPointerPosition()
         //Move in front of screen
-        phoneNode.position = getPositionRelativeToCameraView(distance: 0.1)
+        phoneNode.position = getPositionRelativeToCameraView(distance: 0.1).position
         
-        phoneNode.rotation = phonePositionInformation.camPos
-        
+        phoneNode.rotation = getPositionRelativeToCameraView(distance: 0.1).rotation
     }
     
     func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
@@ -445,7 +441,7 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
         let mat = SCNMatrix4.init(currentFrame.camera.transform)
         let dir = SCNVector3(-1 * mat.m31, -1 * mat.m32, -1 * mat.m33)
         
-        let currentPosition = pointOfView.position + (dir * 0.12)
+        let currentPosition = pointOfView.position
         
         return (currentPosition, true, pointOfView.rotation)
         
@@ -464,7 +460,7 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
         return (SCNVector3(0, 0, -1))
     }
     
-    func getPositionRelativeToCameraView(distance: Float) -> SCNVector3 {
+    func getPositionRelativeToCameraView(distance: Float) -> (position: SCNVector3, rotation: SCNVector4) {
         var x = Float()
         var y = Float()
         var z = Float()
@@ -477,8 +473,8 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
         y = cameraLocation.y + distance * direction.y
         z = cameraLocation.z + distance * direction.z
         
-        let result = SCNVector3Make(x, y, z)
-        return result
+        let position = SCNVector3Make(x, y, z)
+        return (position, rotation)
     }
     
     func calculateCameraDirection(cameraNode: SCNVector4) -> SCNVector3 {
