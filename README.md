@@ -3,11 +3,11 @@ This  demo allows the user to place cubes in space by tapping on screen. The cub
 
 This project borrows from a number of different repositories:
 
-Thanks to ARBrush for SCNVector 3 extensions and inital AR Setup. See that ![HERE](https://github.com/laanlabs/ARBrush)
+Thanks to ARBrush for SCNVector 3 extensions and inital AR Setup. See that [HERE](https://github.com/laanlabs/ARBrush)
 
-Thanks to FloorIsLava for plane detection and configuration. See that ![HERE]( https://github.com/arirawr/ARKit-FloorIsLava)
+Thanks to FloorIsLava for plane detection and configuration. See that [HERE]( https://github.com/arirawr/ARKit-FloorIsLava)
 
-Thanks to RayWenderlich for some SceneKit Pointers. Check them out ![HERE]( https://www.raywenderlich.com/128681/scene-kit-tutorial-swift-part-2-nodes)
+Thanks to RayWenderlich for some SceneKit Pointers. Check them out [HERE]( https://www.raywenderlich.com/128681/scene-kit-tutorial-swift-part-2-nodes)
 
 
 
@@ -20,7 +20,7 @@ Thanks to RayWenderlich for some SceneKit Pointers. Check them out ![HERE]( http
 This function should be thrown in with all of your other initialization code in 'viewDidLoad()' 
 
 
-'''swift
+'''
 func setupPhoneNode() {
         
         
@@ -53,7 +53,7 @@ func setupPhoneNode() {
 First you need to get the position and orientation of your device. Here's a function to do just that. 
 
 
-'''swift 
+'''
 
 func getPositionRelativeToCameraView(distance: Float) -> (position: SCNVector3, rotation: SCNVector4) {
         var x = Float()
@@ -93,7 +93,7 @@ func updatePhoneNode() {
 
 
 ## Create blocks in 3-D Space:
-
+'''
 func spawnShape(point: SCNVector3, size: CGFloat) {
         
         let currentTime = CFAbsoluteTimeGetCurrent()
@@ -131,5 +131,7 @@ func spawnShape(point: SCNVector3, size: CGFloat) {
         
         
     }
+
+As 
 
 
