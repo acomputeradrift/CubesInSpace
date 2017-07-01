@@ -16,32 +16,11 @@ import SceneKit
 import ARKit
 import simd
 
-
-func getRoundyButton(size: CGFloat = 100,
-                     imageName : String,
-                     _ colorTop : UIColor ,
-                     _ colorBottom : UIColor ) -> UIButton {
-    
-    let button = UIButton(frame: CGRect.init(x: 0, y: 0, width: size, height: size))
-    button.clipsToBounds = true
-    
-    let image = UIImage.init(named: imageName )
-    let imgView = UIImageView.init(image: image)
-    imgView.center = CGPoint.init(x: button.bounds.size.width / 2.0, y: button.bounds.size.height / 2.0 )
-    button.setBackgroundImage(image, for: .normal)
-    
-    return button
-    
-}
-
-
-
 class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDelegate {
     
     
     @IBOutlet var sceneView: ARSCNView!
     
-    var ground: SCNNode!
     var buttonDown = false
     var addPointButton : UIButton!
     var frameIdx = 0
@@ -51,6 +30,9 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
     var gravityField = SCNPhysicsField.linearGravity()
     var gravityActivated = false
     var planeArray = [SCNNode]()
+    var phoneNode: SCNNode!
+    var ground: SCNNode!
+
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -91,6 +73,8 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
         groundBody.isAffectedByGravity = false
         ground.physicsBody = groundBody
         
+        
+        setupPhoneNode()
         /*
         var light = SCNLight()
         
@@ -212,10 +196,10 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
         buttonDown = false
     }
     
-    func spawnShape(point: SCNVector3) {
+    func spawnShape(point: SCNVector3, size: CGFloat) {
         
         let currentTime = CFAbsoluteTimeGetCurrent()
-        if  currentTime - lastSpawn > 0.6 {
+        if  currentTime - lastSpawn > 0.1 {
             // 1
             /*var geometry:SCNGeometry
              // 2
@@ -227,12 +211,12 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
             // 4
             
             
-            let shape = SCNPhysicsShape(geometry: SCNBox(width: 0.1, height: 0.1, length: 0.1, chamferRadius: 0), options: nil)
+            let shape = SCNPhysicsShape(geometry: SCNBox(width: size, height: size, length: size, chamferRadius: 0), options: nil)
             let cubeBody = SCNPhysicsBody(type: .dynamic, shape: shape)
             cubeBody.restitution = 0
             //SCNNode(geometry: geometry)
             
-            let cubeGeometry = SCNBox(width: 0.1, height: 0.1, length: 0.1, chamferRadius: 0)
+            let cubeGeometry = SCNBox(width: size, height: size, length: size, chamferRadius: 0)
             let boxMaterial = SCNMaterial()
             boxMaterial.diffuse.contents = UIImage(named: "crate")
             boxMaterial.locksAmbientWithDiffuse = true;
@@ -241,14 +225,15 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
             
             let geometryNode = SCNNode(geometry: cubeGeometry)
             
-            geometryNode.position = point
+            
+            geometryNode.position = getPositionRelativeToCameraView(distance: 0.201)
             geometryNode.physicsBody = cubeBody
             
             
                 //Toggle this to shoot cubes out of the screen
-            //geometryNode.physicsBody!.velocity = self.getUserVector()
+            geometryNode.physicsBody!.velocity = self.getUserVector()
             
-            //geometryNode.physicsBody!.angularVelocity = SCNVector4Make(-1, 0, 0, Float(Double.pi/4));
+            geometryNode.physicsBody!.angularVelocity = SCNVector4Make(-1, 0, 0, Float(Double.pi/16));
             geometryNode.physicsField = gravityField
             geometryNode.physicsBody?.isAffectedByGravity = false
             
@@ -293,11 +278,49 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
         return planeNode
     }
     
+    func setupPhoneNode() {
+        
+            
+        let shape = SCNPhysicsShape(geometry: SCNBox(width: 0.0485, height: 0.1, length: 0.0049, chamferRadius: 0), options: nil)
+        let cubeBody = SCNPhysicsBody(type: .kinematic, shape: shape)
+        cubeBody.restitution = 0
+        
+        let cubeGeometry = SCNBox(width: 0.04, height: 0.1, length: 0.01, chamferRadius: 0)
+        let boxMaterial = SCNMaterial()
+        boxMaterial.diffuse.contents = UIColor.clear
+        boxMaterial.locksAmbientWithDiffuse = true;
+        
+        cubeGeometry.materials = [boxMaterial]
+        
+        phoneNode = SCNNode(geometry: cubeGeometry)
+        
+        var phoneLocation = getPointerPosition().pos
+        
+        //Move in front of screen
+        phoneNode.position = getPositionRelativeToCameraView(distance: 0.0)
+        phoneNode.position = phoneLocation
+        phoneNode.physicsBody = cubeBody
+        
+        sceneView.scene.rootNode.addChildNode(phoneNode)
+        
+        
+    }
+    
+    func updatePhoneNode() {
+        
+        let phonePositionInformation = getPointerPosition()
+        //Move in front of screen
+        phoneNode.position = getPositionRelativeToCameraView(distance: 0.1)
+        
+        phoneNode.rotation = phonePositionInformation.camPos
+        
+    }
+    
     func getUserVector() -> (SCNVector3) { // (direction, position)
         if let frame = self.sceneView.session.currentFrame {
             let mat = SCNMatrix4(frame.camera.transform) // 4x4 transform matrix describing camera in world space
             
-            let vMult = 0.1
+            let vMult = 0.01
             let dir = SCNVector3(-Float(vMult) * mat.m31, -Float(vMult) * mat.m32, -Float(vMult) * mat.m33) // orientation of camera in world space
             let pos = SCNVector3(mat.m41, mat.m42, mat.m43) // location of camera in world space
             
@@ -305,6 +328,8 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
         }
         return (SCNVector3(0, 0, -1))
     }
+    
+    
     
     // MARK: - ARSCNViewDelegate
     
@@ -326,15 +351,12 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
         if ( buttonDown ) {
             
             let pointer = getPointerPosition()
-            spawnShape(point: pointer.pos)
+            spawnShape(point: pointer.pos,size: 0.1)
             
         }
+        updatePhoneNode()
         
         frameIdx = frameIdx + 1
-        
-        
-        
-        
     }
     
     func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
@@ -410,10 +432,10 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
     
     // MARK: stuff
     
-    func getPointerPosition() -> (pos : SCNVector3, valid: Bool, camPos : SCNVector3 ) {
+    func getPointerPosition() -> (pos : SCNVector3, valid: Bool, camPos : SCNVector4 ) {
         
-        guard let pointOfView = sceneView.pointOfView else { return (SCNVector3Zero, false, SCNVector3Zero) }
-        guard let currentFrame = sceneView.session.currentFrame else { return (SCNVector3Zero, false, SCNVector3Zero) }
+        guard let pointOfView = sceneView.pointOfView else { return (SCNVector3Zero, false, SCNVector4Zero) }
+        guard let currentFrame = sceneView.session.currentFrame else { return (SCNVector3Zero, false, SCNVector4Zero) }
         
         
         let mat = SCNMatrix4.init(currentFrame.camera.transform)
@@ -421,9 +443,64 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
         
         let currentPosition = pointOfView.position + (dir * 0.12)
         
-        return (currentPosition, true, pointOfView.position)
+        return (currentPosition, true, pointOfView.rotation)
         
     }
+    
+    func getPositionRelativeToCameraView(distance: Float) -> SCNVector3 {
+        var x = Float()
+        var y = Float()
+        var z = Float()
+        
+        let cameraLocation = self.sceneView.pointOfView!.position //else { return (SCNVector3Zero) }
+        let rotation = self.sceneView.pointOfView!.rotation //else { return (SCNVector3Zero) }
+        let direction = calculateCameraDirection(cameraNode: rotation)
+        
+        x = cameraLocation.x + distance * direction.x
+        y = cameraLocation.y + distance * direction.y
+        z = cameraLocation.z + distance * direction.z
+        
+        let result = SCNVector3Make(x, y, z)
+        return result
+    }
+    
+    func calculateCameraDirection(cameraNode: SCNVector4) -> SCNVector3 {
+        let x = -cameraNode.x
+        let y = -cameraNode.y
+        let z = -cameraNode.z
+        let w = cameraNode.w
+        let cameraRotationMatrix = GLKMatrix3Make(cos(w) + pow(x, 2) * (1 - cos(w)),
+                                                  x * y * (1 - cos(w)) - z * sin(w),
+                                                  x * z * (1 - cos(w)) + y*sin(w),
+                                                  
+                                                  y*x*(1-cos(w)) + z*sin(w),
+                                                  cos(w) + pow(y, 2) * (1 - cos(w)),
+                                                  y*z*(1-cos(w)) - x*sin(w),
+                                                  
+                                                  z*x*(1 - cos(w)) - y*sin(w),
+                                                  z*y*(1 - cos(w)) + x*sin(w),
+                                                  cos(w) + pow(z, 2) * ( 1 - cos(w)))
+        
+        let cameraDirection = GLKMatrix3MultiplyVector3(cameraRotationMatrix, GLKVector3Make(0.0, 0.0, -1.0))
+        return SCNVector3FromGLKVector3(cameraDirection)
+    }
+    
+}
+
+func getRoundyButton(size: CGFloat = 100,
+                     imageName : String,
+                     _ colorTop : UIColor ,
+                     _ colorBottom : UIColor ) -> UIButton {
+    
+    let button = UIButton(frame: CGRect.init(x: 0, y: 0, width: size, height: size))
+    button.clipsToBounds = true
+    
+    let image = UIImage.init(named: imageName )
+    let imgView = UIImageView.init(image: image)
+    imgView.center = CGPoint.init(x: button.bounds.size.width / 2.0, y: button.bounds.size.height / 2.0 )
+    button.setBackgroundImage(image, for: .normal)
+    
+    return button
     
 }
 
