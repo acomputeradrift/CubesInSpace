@@ -1,9 +1,14 @@
 # CubesInSpace
 This  demo allows the user to place cubes in space by tapping on screen. The cubes are physical bodies and respond to gravity if you go ahead and increate the gravitational acceleration above zero. You 
 
-This project borrows heavily from the ARBrush for SCNVector 3 extensions and inital AR Setup. See that here: https://github.com/laanlabs/ARBrush
+This project borrows from a number of different repositories:
 
-Changed to fit the purpose of including SceneKit Content
+Thanks to ARBrush for SCNVector 3 extensions and inital AR Setup. See that ![HERE](https://github.com/laanlabs/ARBrush)
+
+Thanks to FloorIsLava for plane detection and configuration. See that ![HERE]( https://github.com/arirawr/ARKit-FloorIsLava)
+
+Thanks to RayWenderlich for some SceneKit Pointers. Check them out ![HERE]( https://www.raywenderlich.com/128681/scene-kit-tutorial-swift-part-2-nodes)
+
 
 
 ![CubesInSpace Demo](./paddleDemo.gif)
@@ -45,9 +50,8 @@ func setupPhoneNode() {
     }
 '''
 
-Update that code within your 'renderer(_ renderer: SCNSceneRenderer, updateAtTime time: TimeInterval)'
-
 First you need to get the position and orientation of your device. Here's a function to do just that. 
+
 
 '''swift 
 
@@ -73,9 +77,10 @@ func getPositionRelativeToCameraView(distance: Float) -> (position: SCNVector3, 
 
 For usability reasons, I traced a vector normal from the phones screen by about 10 cm. 
 
-Next apply that to your phone node during your regular update cycle. 
+Apply this code to your phone node during your regular update cycle. In my case: 'renderer(_ renderer: SCNSceneRenderer, updateAtTime time: TimeInterval)'
 
 '''swift
+
 func updatePhoneNode() {
         
         //Move in front of screen
@@ -86,5 +91,45 @@ func updatePhoneNode() {
     }
 '''
 
+
+## Create blocks in 3-D Space:
+
+func spawnShape(point: SCNVector3, size: CGFloat) {
+        
+        let currentTime = CFAbsoluteTimeGetCurrent()
+        if  currentTime - lastSpawn > 0.1 {
+            
+            
+            //Initialize cube shape and appearance
+            let cubeGeometry = SCNBox(width: size, height: size, length: size, chamferRadius: 0)
+            let boxMaterial = SCNMaterial()
+            boxMaterial.diffuse.contents = UIImage(named: "crate")
+            boxMaterial.locksAmbientWithDiffuse = true;
+            cubeGeometry.materials = [boxMaterial]
+            
+            
+            //Create Node and add to parent node
+            let geometryNode = SCNNode(geometry: cubeGeometry)
+            geometryNode.position = getPositionRelativeToCameraView(distance: 0.2).position
+            sceneView.scene.rootNode.addChildNode(geometryNode)
+            
+            //Adding physics to shape, in this case, the cube will have the exact same shape as the node
+            let shape = SCNPhysicsShape(geometry: SCNBox(width: size, height: size, length: size, chamferRadius: 0), options: nil)
+            let cubeBody = SCNPhysicsBody(type: .dynamic, shape: shape)
+            cubeBody.restitution = 0
+            geometryNode.physicsBody = cubeBody
+            
+            
+            //Optional initial values for the motion of the node
+            geometryNode.physicsBody!.velocity = self.getUserVector()
+            geometryNode.physicsBody!.angularVelocity = SCNVector4Make(-1, 0, 0, Float(Double.pi/16));
+            geometryNode.physicsField = gravityField
+            geometryNode.physicsBody?.isAffectedByGravity = false //using custom gravity field
+            
+            lastSpawn = currentTime //using this timer to throttle the amount of cubes created
+        }
+        
+        
+    }
 
 
