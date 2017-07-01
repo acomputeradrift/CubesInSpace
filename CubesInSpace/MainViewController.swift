@@ -266,60 +266,39 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
         
         let currentTime = CFAbsoluteTimeGetCurrent()
         if  currentTime - lastSpawn > 0.1 {
-            // 1
-            /*var geometry:SCNGeometry
-             // 2
-             switch ShapeType.random() {
-             default:
-             // 3
-             geometry = SCNBox(width: 1.0, height: 1.0, length: 1.0, chamferRadius: 0.0)
-             }*/
-            // 4
             
             
-            let shape = SCNPhysicsShape(geometry: SCNBox(width: size, height: size, length: size, chamferRadius: 0), options: nil)
-            let cubeBody = SCNPhysicsBody(type: .dynamic, shape: shape)
-            cubeBody.restitution = 0
-            //SCNNode(geometry: geometry)
-            
+            //Initialize cube shape and appearance
             let cubeGeometry = SCNBox(width: size, height: size, length: size, chamferRadius: 0)
             let boxMaterial = SCNMaterial()
             boxMaterial.diffuse.contents = UIImage(named: "crate")
             boxMaterial.locksAmbientWithDiffuse = true;
-            
             cubeGeometry.materials = [boxMaterial]
             
+            
+            //Create Node and add to parent node
             let geometryNode = SCNNode(geometry: cubeGeometry)
+            geometryNode.position = getPositionRelativeToCameraView(distance: 0.2).position
+            sceneView.scene.rootNode.addChildNode(geometryNode)
             
-            
-            geometryNode.position = getPositionRelativeToCameraView(distance: 0.201).position
+            //Adding physics to shape, in this case, the cube will have the exact same shape as the node
+            let shape = SCNPhysicsShape(geometry: SCNBox(width: size, height: size, length: size, chamferRadius: 0), options: nil)
+            let cubeBody = SCNPhysicsBody(type: .dynamic, shape: shape)
+            cubeBody.restitution = 0
             geometryNode.physicsBody = cubeBody
             
             
-            //Toggle this to shoot cubes out of the screen
+            //Optional initial values for the motion of the node
             geometryNode.physicsBody!.velocity = self.getUserVector()
-            
             geometryNode.physicsBody!.angularVelocity = SCNVector4Make(-1, 0, 0, Float(Double.pi/16));
             geometryNode.physicsField = gravityField
-            geometryNode.physicsBody?.isAffectedByGravity = false
+            geometryNode.physicsBody?.isAffectedByGravity = false //using custom gravity field
             
-            sceneView.scene.rootNode.addChildNode(geometryNode)
-            // 5
-            
-            //sceneView!.node
-            
-            lastSpawn = currentTime
+            lastSpawn = currentTime //using this timer to throttle the amount of cubes created
         }
         
         
     }
-    
-    
-    
-    
-    
-    
-    
     
     
     // MARK: - ARSCNViewDelegate
@@ -334,8 +313,6 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
      */
     
     //var prevTime : TimeInterval = -1
-    
-    
     
     
     func renderer(_ renderer: SCNSceneRenderer, updateAtTime time: TimeInterval) {
