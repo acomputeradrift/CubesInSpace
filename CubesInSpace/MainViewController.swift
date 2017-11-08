@@ -14,7 +14,7 @@
 import UIKit
 import SceneKit
 import ARKit
-import simd
+//import simd
 
 class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDelegate {
   
@@ -23,101 +23,33 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
   
   
   // MARK: - Properties
-  
   var buttonDown = false
-  var addPointButton : UIButton!
-  var frameIdx = 0
-  var splitLine = false
-  var lineRadius : Float = 0.001
+  var modeToggleButton : UIButton!
   var lastSpawn = CFAbsoluteTimeGetCurrent()
   var gravityField = SCNPhysicsField.linearGravity()
   var gravityActivated = false
-  var planeArray = [SCNNode]()
   var phoneNode: SCNNode!
   var drawNode: SCNNode!
+  var previousSize: CGFloat?
   var ground: SCNNode!
   var cubes = [SCNNode]()
   var currentMode: PlayMode = .cubes
+  var screenSize = UIScreen.main.bounds.size
   
   enum PlayMode {
-    case drawing
-    case cubes
+    case drawing, cubes
+    
+    
   }
   
   // MARK: - View life cycle
   override func viewDidLoad() {
     super.viewDidLoad()
     setupSceneView()
-    setupButton()
+    setupModeToggleButton()
     setupGestureRecognizers()
     setupGroundNode()
     setupPhoneNode()
-  }
-  
-  private func setupSceneView() {
-    // Set the view's delegate
-    sceneView.delegate = self
-    
-    // Show statistics such as fps and timing information
-    // This can conflict with rendering
-    sceneView.showsStatistics = true
-    
-    // Create a new scene
-    let scene = SCNScene(named: "art.scnassets/world.scn")!
-    
-    // Set the scene to the view
-    sceneView.scene = scene
-    sceneView.automaticallyUpdatesLighting = true
-    setupGravityField()
-  }
-  
-  private func setupGravityField() {
-    gravityField.direction = SCNVector3(0,0,0);
-    gravityField.strength = 0.0
-  }
-  
-  private func setupGroundNode() {
-    let groundGeometry = SCNFloor()
-    groundGeometry.reflectivity = 0
-    let groundMaterial = SCNMaterial()
-    groundMaterial.diffuse.contents = UIColor.clear
-    groundGeometry.materials = [groundMaterial]
-    ground = SCNNode(geometry: groundGeometry)
-    ground.position = sceneView.scene.rootNode.position - SCNVector3(0,1.5,0)
-    
-    let groundShape = SCNPhysicsShape(geometry: groundGeometry, options: nil)
-    let groundBody = SCNPhysicsBody(type: .kinematic, shape: groundShape)
-    groundBody.restitution = 0
-    groundBody.isAffectedByGravity = false
-    ground.physicsBody = groundBody
-    sceneView.scene.rootNode.addChildNode(ground)
-  }
-  
-  
-  func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
-    return touch.view == gestureRecognizer.view
-  }
-  
-  private func setupGestureRecognizers() {
-    //self.view.addGestureRecognizer(UIGestureRecognizer.)
-    let tap = UILongPressGestureRecognizer(target: self, action: #selector(tapHandler))
-    tap.minimumPressDuration = 0
-    tap.cancelsTouchesInView = false
-    tap.delegate = self
-    self.sceneView.addGestureRecognizer(tap)
-  }
-  
-  // called by gesture recognizer
-  @objc func tapHandler(gesture: UITapGestureRecognizer) {
-    
-    // handle touch down and touch up events separately
-    if gesture.state == .began {
-      // do something...
-      buttonTouchDown()
-    } else if gesture.state == .ended { // optional for touch up event catching
-      // do something else...
-      buttonTouchUp()
-    }
   }
   
   override func viewWillAppear(_ animated: Bool) {
@@ -148,12 +80,51 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
   }
   
   
-  // MARK: - Initialization
-  
-  func setupButton() {
+  //MARK: - Initialization
+  private func setupSceneView() {
+    // Set the view's delegate
+    sceneView.delegate = self
     
-    let sw = self.view.bounds.size.width
-    let sh = self.view.bounds.size.height
+    // Show statistics such as fps and timing information
+    // This can conflict with rendering
+    sceneView.showsStatistics = true
+    
+    // Create a new scene
+    let scene = SCNScene(named: "art.scnassets/world.scn")!
+    
+    // Set the scene to the view
+    sceneView.scene = scene
+    sceneView.automaticallyUpdatesLighting = true
+  }
+
+  
+  private func setupGroundNode() {
+    let groundGeometry = SCNFloor()
+    groundGeometry.reflectivity = 0
+    let groundMaterial = SCNMaterial()
+    groundMaterial.diffuse.contents = UIColor.clear
+    groundGeometry.materials = [groundMaterial]
+    ground = SCNNode(geometry: groundGeometry)
+    ground.position = sceneView.scene.rootNode.position - SCNVector3(0,1.5,0)
+    
+    let groundShape = SCNPhysicsShape(geometry: groundGeometry, options: nil)
+    let groundBody = SCNPhysicsBody(type: .kinematic, shape: groundShape)
+    groundBody.restitution = 0
+    groundBody.isAffectedByGravity = false
+    ground.physicsBody = groundBody
+    sceneView.scene.rootNode.addChildNode(ground)
+  }
+  
+  private func setupGestureRecognizers() {
+    //self.view.addGestureRecognizer(UIGestureRecognizer.)
+    let tap = UILongPressGestureRecognizer(target: self, action: #selector(tapHandler))
+    tap.minimumPressDuration = 0
+    tap.cancelsTouchesInView = false
+    tap.delegate = self
+    self.sceneView.addGestureRecognizer(tap)
+  }
+  
+  func setupModeToggleButton() {
     
     // red
     let c1 = UIColor(red: 246.0/255.0, green: 205.0/255.0, blue: 73.0/255.0, alpha: 1.0)
@@ -163,15 +134,15 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
     //let c1 = UIColor(red: 112.0/255.0, green: 219.0/255.0, blue: 155.0/255.0, alpha: 1.0)
     //let c2 = UIColor(red: 86.0/255.0, green: 197.0/255.0, blue: 238.0/255.0, alpha: 1.0)
     
-    addPointButton = getRoundyButton(size: 60, imageName: "plus", c1, c2)
+    modeToggleButton = getRoundyButton(size: 60, imageName: "plus", c1, c2)
     //addPointButton.setTitle("+", for: UIControlState.normal)
     
-    self.view.addSubview(addPointButton)
+    self.view.addSubview(modeToggleButton)
     
     let buttonXPosition = CGFloat(40.0)
-    let buttonYPosition = sh - 40
-    addPointButton.center = CGPoint.init(x: buttonXPosition, y: buttonYPosition )
-    addPointButton.addTarget(self, action:#selector(self.toggleGravity), for: .touchUpInside)
+    let buttonYPosition = self.screenSize.height - 40
+    modeToggleButton.center = CGPoint.init(x: buttonXPosition, y: buttonYPosition )
+    modeToggleButton.addTarget(self, action:#selector(self.toggleMode), for: .touchUpInside)
     
   }
   
@@ -228,17 +199,35 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
     phoneNode.physicsBody = cubeBody
     
     sceneView.scene.rootNode.addChildNode(phoneNode)
-    
-    
   }
   
-  func placeNewNode() {
-    let drawGeometry = SCNSphere(radius: 0.05)
+  func placeNewDrawingNode() {
+    
+    let positionOfNextNode = getPositionRelativeToCameraView(distance: 0.5).position
+    var nodeSize: CGFloat = 0.01
+    
+    
+    //Extra calcs to ensure that the node smoothly changes size relative to velocity
+    if let previousNode = drawNode {
+      let distanceFromPreviousNode = previousNode.position.distance(vector: positionOfNextNode) * 200
+      let logisticDistance = 1 / ( 1 + pow(2.71828, -(distanceFromPreviousNode - 1)))
+      print(logisticDistance)
+      
+      if let previousSize = self.previousSize {
+        var newCalculatedSize = CGFloat(0.05 * logisticDistance)
+        
+        let sizeDelta = newCalculatedSize - previousSize
+        if sizeDelta.magnitude > 0.001 {
+          newCalculatedSize = previousSize + 0.001 * CGFloat(sizeDelta.sign.rawValue)
+        }
+        nodeSize = newCalculatedSize
+      } else { nodeSize = 0.001 }
+    }
+    
+    let drawGeometry = SCNSphere(radius: nodeSize)
     drawGeometry.firstMaterial?.diffuse.contents = UIColor.red
-    
-    
     self.drawNode = SCNNode(geometry: drawGeometry)
-    self.drawNode.position =  getPositionRelativeToCameraView(distance: 0.5).position
+    self.drawNode.position = positionOfNextNode
     
     sceneView.scene.rootNode.addChildNode(self.drawNode)
   }
@@ -247,52 +236,50 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
   // MARK: - Controls
   
   
-  @objc func toggleGravity() {
-    
-    if gravityActivated {
-      gravityField.direction = SCNVector3(0,-1,0);
-      gravityField.strength = 0.005
-      for cube in cubes {
-        cube.physicsBody?.angularVelocity = SCNVector4Make(0, 0, 0, Float(0));
-        
+  @objc func toggleMode() {
+      switch currentMode {
+      case .drawing:
+        self.modeToggleButton.setBackgroundImage(UIImage.init(named: "stop" ), for: .normal)
+        self.currentMode = .cubes
+      case .cubes:
+        self.modeToggleButton.setBackgroundImage(UIImage.init(named: "plus" ), for: .normal)
+        self.currentMode = .drawing
       }
-      gravityActivated = false
-      addPointButton.setBackgroundImage(UIImage.init(named: "stop" ), for: .normal)
-      
-      
-    }   else {
-      gravityField.direction = SCNVector3(0,-1,0);
-      gravityField.strength = 0.0
-      gravityActivated = true
-      for cube in cubes {
-        cube.physicsBody?.angularVelocity = SCNVector4Make(1, 0, 0, Float(Float(Double.pi/16)));
-        
-      }
-      addPointButton.setBackgroundImage(UIImage.init(named: "plus" ), for: .normal)
-      
-      
-    }
-    
   }
   
+  @objc func tapHandler(gesture: UITapGestureRecognizer) {
+    if gesture.state == .began {
+      buttonTouchDown()
+    } else if gesture.state == .ended {
+      buttonTouchUp()
+    }
+  }
   
   @objc func buttonTouchDown() {
-    splitLine = true
     buttonDown = true
   }
+  
   @objc func buttonTouchUp() {
     buttonDown = false
+    self.drawNode = nil
   }
   
+  
+  func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+    return touch.view == gestureRecognizer.view
+  }
+  
+  
+  // MARK: - Actions
   func spawnShape(point: SCNVector3, size: CGFloat) {
-    
+    let currentTime = CFAbsoluteTimeGetCurrent()
+    if  currentTime - lastSpawn > 0.1 {
+
     switch currentMode {
     case .drawing:
-      placeNewNode()
-      
+        placeNewDrawingNode()
     case .cubes:
-      let currentTime = CFAbsoluteTimeGetCurrent()
-      if  currentTime - lastSpawn > 0.1 {
+     
         //Initialize cube shape and appearance
         let cubeGeometry = SCNBox(width: size, height: size, length: size, chamferRadius: 0)
         let boxMaterial = SCNMaterial()
@@ -356,8 +343,6 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
       
     }
     updatePhoneNode()
-    
-    frameIdx = frameIdx + 1
   }
   
   func updatePhoneNode() {
@@ -381,50 +366,24 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
       // ARKit owns the node corresponding to the anchor, so make the plane a child node.
       
       node.addChildNode(planeNode)
-      planeArray.append(planeNode)
     }
   }
   
   func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
     
     guard let planeAnchor = anchor as? ARPlaneAnchor else {return}
-    
-    // Remove existing plane nodes
-    for plane in planeArray {
-      plane.removeFromParentNode()
-    }
-    
     if let planeNode = createPlaneNode(anchor: planeAnchor) {
-      
       node.addChildNode(planeNode)
-      planeArray.append(planeNode)
     }
     
   }
   
   func renderer(_ renderer: SCNSceneRenderer, didRemove node: SCNNode, for anchor: ARAnchor) {
-    
     guard anchor is ARPlaneAnchor else { return }
-    
-    // Remove existing plane nodes
-    for plane in planeArray {
-      plane.removeFromParentNode()
-    }
+
   }
   
   func renderer(_ renderer: SCNSceneRenderer, didRenderScene scene: SCNScene, atTime time: TimeInterval) {
-    
-    /*
-     if let commandQueue = self.sceneView?.commandQueue {
-     if let encoder = self.sceneView.currentRenderCommandEncoder {
-     
-     let projMat = float4x4.init((self.sceneView.pointOfView?.camera?.projectionTransform)!)
-     let modelViewMat = float4x4.init((self.sceneView.pointOfView?.worldTransform)!).inverse
-     
-     //vertBrush.render(commandQueue, encoder, parentModelViewMatrix: modelViewMat, projectionMatrix: projMat)
-     
-     }
-     }*/
     
   }
   
@@ -443,7 +402,7 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
     
   }
   
-  // MARK: stuff
+  // MARK: - Linear Algebra Helpers
   
   func getPointerPosition() -> (pos : SCNVector3, valid: Bool, camPos : SCNVector4 ) {
     
@@ -452,7 +411,7 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
     
     
     let mat = SCNMatrix4.init(currentFrame.camera.transform)
-    let dir = SCNVector3(-1 * mat.m31, -1 * mat.m32, -1 * mat.m33)
+    _ = SCNVector3(-1 * mat.m31, -1 * mat.m32, -1 * mat.m33)
     
     let currentPosition = pointOfView.position
     
@@ -466,7 +425,7 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
       
       let vMult = 0.01
       let dir = SCNVector3(-Float(vMult) * mat.m31, -Float(vMult) * mat.m32, -Float(vMult) * mat.m33) // orientation of camera in world space
-      let pos = SCNVector3(mat.m41, mat.m42, mat.m43) // location of camera in world space
+      _ = SCNVector3(mat.m41, mat.m42, mat.m43) // location of camera in world space
       
       return (dir)
     }
