@@ -34,7 +34,7 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
   var ground: SCNNode!
   var planeArray = [SCNNode]()
   var cubes = [SCNNode]()
-  var currentMode: PlayMode = .drawing
+  var currentMode: PlayMode = .cubes
   var screenSize = UIScreen.main.bounds.size
   
   enum PlayMode {
@@ -182,21 +182,21 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
   
   func setupModeToggleButton() {
     
-    // red
-    let c1 = UIColor(red: 246.0/255.0, green: 205.0/255.0, blue: 73.0/255.0, alpha: 1.0)
-    let c2 = UIColor(red: 230.0/255.0, green: 98.0/255.0, blue: 87.0/255.0, alpha: 1.0)
+    let size = 60
+    let imageName = "plus"
+    let button = UIButton(frame: CGRect.init(x: 0, y: 0, width: size, height: size))
+    button.clipsToBounds = true
     
-    // greenish
-    //let c1 = UIColor(red: 112.0/255.0, green: 219.0/255.0, blue: 155.0/255.0, alpha: 1.0)
-    //let c2 = UIColor(red: 86.0/255.0, green: 197.0/255.0, blue: 238.0/255.0, alpha: 1.0)
-    
-    modeToggleButton = getRoundyButton(size: 60, imageName: "stop", c1, c2)
-    //addPointButton.setTitle("+", for: UIControlState.normal)
+    let image = UIImage.init(named: imageName )
+    let imgView = UIImageView.init(image: image)
+    imgView.center = CGPoint.init(x: button.bounds.size.width / 2.0, y: button.bounds.size.height / 2.0 )
+    button.setBackgroundImage(image, for: .normal)
+    modeToggleButton = button
     
     self.view.addSubview(modeToggleButton)
     
     let buttonXPosition = CGFloat(40.0)
-    let buttonYPosition = self.screenSize.height - 40
+    let buttonYPosition = self.screenSize.height - 60
     modeToggleButton.center = CGPoint.init(x: buttonXPosition, y: buttonYPosition )
     modeToggleButton.addTarget(self, action:#selector(self.toggleMode), for: .touchUpInside)
     
@@ -562,7 +562,7 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
   
 }
 
-func getRoundyButton(size: CGFloat = 100,
+func createToggleButton(size: CGFloat = 100,
                      imageName : String,
                      _ colorTop : UIColor ,
                      _ colorBottom : UIColor ) -> UIButton {

@@ -10,12 +10,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "CubesInSpace/MainViewController.swift"
-            timestampString = "531807972.281848"
+            timestampString = "531821994.611806"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "268"
-            endingLineNumber = "268"
-            landmarkName = "gestureRecognizer(_:shouldReceive:)"
+            startingLineNumber = "286"
+            endingLineNumber = "286"
+            landmarkName = "userTouchingScreen()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -26,12 +26,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "CubesInSpace/MainViewController.swift"
-            timestampString = "531807972.282278"
+            timestampString = "531821994.612596"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "247"
-            endingLineNumber = "247"
-            landmarkName = "toggleMode()"
+            startingLineNumber = "290"
+            endingLineNumber = "290"
+            landmarkName = "userTouchEnded()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -42,12 +42,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "CubesInSpace/MainViewController.swift"
-            timestampString = "531807972.282547"
+            timestampString = "531821994.613067"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "251"
-            endingLineNumber = "251"
-            landmarkName = "tapHandler(gesture:)"
+            startingLineNumber = "330"
+            endingLineNumber = "330"
+            landmarkName = "placeNewDrawingNode()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
