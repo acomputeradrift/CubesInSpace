@@ -32,8 +32,9 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
   var drawNode: SCNNode!
   var previousSize: CGFloat?
   var ground: SCNNode!
+  var planeArray = [SCNNode]()
   var cubes = [SCNNode]()
-  var currentMode: PlayMode = .cubes
+  var currentMode: PlayMode = .drawing
   var screenSize = UIScreen.main.bounds.size
   
   enum PlayMode {
@@ -49,6 +50,7 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
     setupModeToggleButton()
     setupGestureRecognizers()
     setupGroundNode()
+    setupLightNode()
     setupPhoneNode()
   }
   
@@ -94,7 +96,13 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
     
     // Set the scene to the view
     sceneView.scene = scene
-    sceneView.automaticallyUpdatesLighting = true
+    //sceneView.automaticallyUpdatesLighting = true
+    setupGravityField()
+  }
+  
+  private func setupGravityField() {
+    gravityField.direction = SCNVector3(0,0,0);
+    gravityField.strength = 0.0
   }
 
   
@@ -115,6 +123,54 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
     sceneView.scene.rootNode.addChildNode(ground)
   }
   
+  private func setupLightNode() {
+    
+    let frontLight = SCNLight()
+    frontLight.type = .omni
+    frontLight.intensity = 800
+    frontLight.castsShadow = true
+    
+    
+    let lightNode = SCNNode()
+    let lightGeometry = SCNSphere(radius: 0.1)
+    lightGeometry.firstMaterial?.diffuse.contents = UIColor.clear
+    lightNode.light = frontLight
+    
+    var lightPosition = getPositionRelativeToCameraView(distance:  2).position
+    lightPosition = SCNVector3(x: lightPosition.x,
+                               y: lightPosition.y + 1,
+                               z: lightPosition.z)
+    
+    
+    lightNode.position = lightPosition//getPositionRelativeToCameraView(distance:  340).position
+    lightNode.geometry = lightGeometry
+    lightNode.opacity = 0
+    
+    let backLight = SCNLight()
+    backLight.type = .omni
+    backLight.intensity = 800
+    backLight.castsShadow = true
+    
+    
+    let lightNode2 = SCNNode()
+    let lightGeometry2 = SCNSphere(radius: 0.1)
+    lightGeometry2.firstMaterial?.diffuse.contents = UIColor.clear
+    lightNode2.light = backLight
+    
+    var lightPosition2 = getPositionRelativeToCameraView(distance:  -1).position
+    lightPosition2 = SCNVector3(x: lightPosition2.x,
+                               y: lightPosition2.y + 1,
+                               z: lightPosition2.z)
+    
+    
+    lightNode2.position = lightPosition2//getPositionRelativeToCameraView(distance:  340).position
+    lightNode2.geometry = lightGeometry2
+    lightNode2.opacity = 0
+    
+    self.sceneView.scene.rootNode.addChildNode(lightNode)
+    self.sceneView.scene.rootNode.addChildNode(lightNode2)
+
+  }
   private func setupGestureRecognizers() {
     //self.view.addGestureRecognizer(UIGestureRecognizer.)
     let tap = UILongPressGestureRecognizer(target: self, action: #selector(tapHandler))
@@ -134,7 +190,7 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
     //let c1 = UIColor(red: 112.0/255.0, green: 219.0/255.0, blue: 155.0/255.0, alpha: 1.0)
     //let c2 = UIColor(red: 86.0/255.0, green: 197.0/255.0, blue: 238.0/255.0, alpha: 1.0)
     
-    modeToggleButton = getRoundyButton(size: 60, imageName: "plus", c1, c2)
+    modeToggleButton = getRoundyButton(size: 60, imageName: "stop", c1, c2)
     //addPointButton.setTitle("+", for: UIControlState.normal)
     
     self.view.addSubview(modeToggleButton)
@@ -201,36 +257,7 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
     sceneView.scene.rootNode.addChildNode(phoneNode)
   }
   
-  func placeNewDrawingNode() {
-    
-    let positionOfNextNode = getPositionRelativeToCameraView(distance: 0.5).position
-    var nodeSize: CGFloat = 0.01
-    
-    
-    //Extra calcs to ensure that the node smoothly changes size relative to velocity
-    if let previousNode = drawNode {
-      let distanceFromPreviousNode = previousNode.position.distance(vector: positionOfNextNode) * 200
-      let logisticDistance = 1 / ( 1 + pow(2.71828, -(distanceFromPreviousNode - 1)))
-      print(logisticDistance)
-      
-      if let previousSize = self.previousSize {
-        var newCalculatedSize = CGFloat(0.05 * logisticDistance)
-        
-        let sizeDelta = newCalculatedSize - previousSize
-        if sizeDelta.magnitude > 0.001 {
-          newCalculatedSize = previousSize + 0.001 * CGFloat(sizeDelta.sign.rawValue)
-        }
-        nodeSize = newCalculatedSize
-      } else { nodeSize = 0.001 }
-    }
-    
-    let drawGeometry = SCNSphere(radius: nodeSize)
-    drawGeometry.firstMaterial?.diffuse.contents = UIColor.red
-    self.drawNode = SCNNode(geometry: drawGeometry)
-    self.drawNode.position = positionOfNextNode
-    
-    sceneView.scene.rootNode.addChildNode(self.drawNode)
-  }
+  
   
   
   // MARK: - Controls
@@ -239,29 +266,30 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
   @objc func toggleMode() {
       switch currentMode {
       case .drawing:
-        self.modeToggleButton.setBackgroundImage(UIImage.init(named: "stop" ), for: .normal)
+        self.modeToggleButton.setBackgroundImage(UIImage.init(named: "plus" ), for: .normal)
         self.currentMode = .cubes
       case .cubes:
-        self.modeToggleButton.setBackgroundImage(UIImage.init(named: "plus" ), for: .normal)
+        self.modeToggleButton.setBackgroundImage(UIImage.init(named: "stop" ), for: .normal)
         self.currentMode = .drawing
       }
   }
   
   @objc func tapHandler(gesture: UITapGestureRecognizer) {
     if gesture.state == .began {
-      buttonTouchDown()
+      userTouchingScreen()
     } else if gesture.state == .ended {
-      buttonTouchUp()
+      userTouchEnded()
     }
   }
   
-  @objc func buttonTouchDown() {
+  @objc func userTouchingScreen() {
     buttonDown = true
   }
   
-  @objc func buttonTouchUp() {
+  @objc func userTouchEnded() {
     buttonDown = false
     self.drawNode = nil
+    self.previousSize = nil
   }
   
   
@@ -271,6 +299,7 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
   
   
   // MARK: - Actions
+  
   func spawnShape(point: SCNVector3, size: CGFloat) {
     let currentTime = CFAbsoluteTimeGetCurrent()
     if  currentTime - lastSpawn > 0.1 {
@@ -279,38 +308,87 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
     case .drawing:
         placeNewDrawingNode()
     case .cubes:
-     
-        //Initialize cube shape and appearance
-        let cubeGeometry = SCNBox(width: size, height: size, length: size, chamferRadius: 0)
-        let boxMaterial = SCNMaterial()
-        boxMaterial.diffuse.contents = UIImage(named: "crate")
-        boxMaterial.locksAmbientWithDiffuse = true;
-        cubeGeometry.materials = [boxMaterial]
-        
-        //Create Node and add to parent node
-        let geometryNode = SCNNode(geometry: cubeGeometry)
-        geometryNode.position = getPositionRelativeToCameraView(distance: 0.2).position
-        sceneView.scene.rootNode.addChildNode(geometryNode)
-        self.cubes.insert(geometryNode, at: 0)
-        self.checkCubeLimit()
-        
-        //Adding physics to shape, in this case, the cube will have the exact same shape as the node
-        let shape = SCNPhysicsShape(geometry: SCNBox(width: size, height: size, length: size, chamferRadius: 0), options: nil)
-        let cubeBody = SCNPhysicsBody(type: .dynamic, shape: shape)
-        cubeBody.restitution = 0
-        geometryNode.physicsBody = cubeBody
-        
-        //Optional initial values for the motion of the node
-        geometryNode.physicsBody!.velocity = self.getUserVector()
-        geometryNode.physicsBody!.angularVelocity = SCNVector4Make(1, 0, 0, Float(Double.pi/16));
-        geometryNode.physicsField = gravityField
-        geometryNode.physicsBody?.isAffectedByGravity = false //using custom gravity field
-        
-        lastSpawn = currentTime //using this timer to throttle the amount of cubes created
+        placeNewCube(size, currentTime) //using this timer to throttle the amount of cubes created
       }
     }
   }
   
+  func placeNewDrawingNode() {
+    
+    let positionOfNextNode = getPositionRelativeToCameraView(distance: 0.5).position
+    var nodeSize: CGFloat = 0
+    
+    
+    //Extra calcs to ensure that the node smoothly changes size relative to velocity
+    if let previousNode = drawNode {
+      let distanceFromPreviousNode = previousNode.position.distance(vector: positionOfNextNode) * 200
+      let logisticDistance = 1 / (1 + pow(2.71828, -(distanceFromPreviousNode - 0.0005)))
+      
+      if let lastSize = self.previousSize {
+        let newCalculatedSize = CGFloat(0.5 * logisticDistance)
+        var sizeDelta = (newCalculatedSize - lastSize) / 1000
+        if sizeDelta.magnitude > 0.005 {
+          sizeDelta = 0.005 * CGFloat(sizeDelta.magnitude/sizeDelta)
+          print("oldSize: \(lastSize), logDist \(logisticDistance), delta: \(sizeDelta)")
+        }
+        nodeSize = lastSize + sizeDelta
+      } else {
+        nodeSize = 0.005
+      }
+      if nodeSize > 0.025 { nodeSize = 0.025}
+      self.previousSize = nodeSize
+      
+    }
+    
+    let drawGeometry = SCNSphere(radius: nodeSize)
+    drawGeometry.firstMaterial?.diffuse.contents = UIColor.red
+    self.drawNode = SCNNode(geometry: drawGeometry)
+    self.drawNode.position = positionOfNextNode
+    
+    
+    //let shape = SCNPhysicsShape(geometry: SCNSphere(radius: nodeSize) , options: nil)
+    //let sphereBody = SCNPhysicsBody(type: .dynamic, shape: shape)
+    //sphereBody.restitution = 0
+    
+    //Optional initial values for the motion of the node
+    //sphereBody.isAffectedByGravity = false //using custom gravity field
+    //drawNode.physicsBody = sphereBody
+    
+    //    drawNode.physicsField = gravityField
+    
+    
+    sceneView.scene.rootNode.addChildNode(self.drawNode)
+  }
+  
+  fileprivate func placeNewCube(_ size: CGFloat, _ currentTime: CFAbsoluteTime) {
+    //Initialize cube shape and appearance
+    let cubeGeometry = SCNBox(width: size, height: size, length: size, chamferRadius: 0)
+    let boxMaterial = SCNMaterial()
+    boxMaterial.diffuse.contents = UIImage(named: "crate")
+    boxMaterial.locksAmbientWithDiffuse = true;
+    cubeGeometry.materials = [boxMaterial]
+    
+    //Create Node and add to parent node
+    let geometryNode = SCNNode(geometry: cubeGeometry)
+    geometryNode.position = getPositionRelativeToCameraView(distance: 0.2).position
+    sceneView.scene.rootNode.addChildNode(geometryNode)
+    self.cubes.insert(geometryNode, at: 0)
+    self.checkCubeLimit()
+    
+    //Adding physics to shape, in this case, the cube will have the exact same shape as the node
+    let shape = SCNPhysicsShape(geometry: SCNBox(width: size, height: size, length: size, chamferRadius: 0), options: nil)
+    let cubeBody = SCNPhysicsBody(type: .dynamic, shape: shape)
+    cubeBody.restitution = 0
+    geometryNode.physicsBody = cubeBody
+    
+    //Optional initial values for the motion of the node
+    geometryNode.physicsBody!.velocity = self.getUserVector()
+    geometryNode.physicsBody!.angularVelocity = SCNVector4Make(1, 0, 0, Float(Double.pi/16));
+    geometryNode.physicsField = gravityField
+    geometryNode.physicsBody?.isAffectedByGravity = false //using custom gravity field
+    
+    lastSpawn = currentTime
+  }
   
   func checkCubeLimit() {
     if cubes.count > 25 {
@@ -364,22 +442,34 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
     
     if let planeNode = createPlaneNode(anchor: planeAnchor) {
       // ARKit owns the node corresponding to the anchor, so make the plane a child node.
-      
+   
       node.addChildNode(planeNode)
+      planeArray.append(planeNode)
+
     }
   }
   
   func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
     
     guard let planeAnchor = anchor as? ARPlaneAnchor else {return}
+    
+    for plane in planeArray {
+      plane.removeFromParentNode()
+    }
     if let planeNode = createPlaneNode(anchor: planeAnchor) {
       node.addChildNode(planeNode)
+      planeArray.append(planeNode)
+
     }
     
   }
   
   func renderer(_ renderer: SCNSceneRenderer, didRemove node: SCNNode, for anchor: ARAnchor) {
     guard anchor is ARPlaneAnchor else { return }
+    
+    for plane in planeArray {
+      plane.removeFromParentNode()
+    }
 
   }
   
