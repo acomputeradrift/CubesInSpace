@@ -1,5 +1,5 @@
 # CubesInSpace
-This  demo allows the user to place cubes in space by tapping on screen. The cubes are physical bodies and respond to gravity if you go ahead and increate the gravitational acceleration above zero. You 
+This  demo allows the user to place cubes in space by tapping on screen. The cubes are physical bodies and respond to being 'hit' with the phone
 
 This project borrows from a number of different repositories:
 
