@@ -10,11 +10,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "CubesInSpace/MainViewController.swift"
-            timestampString = "531821994.611806"
+            timestampString = "539169529.420559"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "286"
-            endingLineNumber = "286"
+            startingLineNumber = "281"
+            endingLineNumber = "281"
             landmarkName = "userTouchingScreen()"
             landmarkType = "7">
          </BreakpointContent>
@@ -26,11 +26,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "CubesInSpace/MainViewController.swift"
-            timestampString = "531821994.612596"
+            timestampString = "539169529.42126"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "290"
-            endingLineNumber = "290"
+            startingLineNumber = "285"
+            endingLineNumber = "285"
             landmarkName = "userTouchEnded()"
             landmarkType = "7">
          </BreakpointContent>
@@ -42,11 +42,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "CubesInSpace/MainViewController.swift"
-            timestampString = "531821994.613067"
+            timestampString = "539169529.421702"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "330"
-            endingLineNumber = "330"
+            startingLineNumber = "325"
+            endingLineNumber = "325"
             landmarkName = "placeNewDrawingNode()"
             landmarkType = "7">
          </BreakpointContent>
