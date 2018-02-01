@@ -6,11 +6,6 @@
 //  Copyright © 2017 Ryan Pasecky. All rights reserved.
 //
 
-//
-//  ViewController.swift
-//  ARBrush
-//
-
 import UIKit
 import SceneKit
 import ARKit
@@ -411,27 +406,18 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
   
   //var prevTime : TimeInterval = -1
   
-  
-  func renderer(_ renderer: SCNSceneRenderer, updateAtTime time: TimeInterval) {
-    
+  func renderer(_ renderer: SCNSceneRenderer, willRenderScene scene: SCNScene, atTime time: TimeInterval) {
     if ( buttonDown ) {
-      
       let pointer = getPointerPosition()
       spawnShape(point: pointer.pos,size: 0.1)
-      
     }
     updatePhoneNode()
   }
   
   func updatePhoneNode() {
-    
-    
     //Move in front of screen
     let phonePositioningInfo = getPositionRelativeToCameraView(distance: 0.1)
-    
-    
     phoneNode.position = phonePositioningInfo.position
-    
     phoneNode.rotation = phonePositioningInfo.rotation
   }
   

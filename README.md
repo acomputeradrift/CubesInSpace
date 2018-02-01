@@ -25,7 +25,7 @@ func setupPhoneNode() {
         
         
         let shape = SCNPhysicsShape(geometry: SCNBox(width: 0.0485, height: 0.1, length: 0.0049, chamferRadius: 0), options: nil)
-        let cubeBody = SCNPhysicsBody(type: .kinematic, shape: shape)
+        let cubeBody = SCNPhysicsBody(type: .kinematic , shape: shape)
         cubeBody.restitution = 0
         
         let cubeGeometry = SCNBox(width: 0.04, height: 0.1, length: 0.01, chamferRadius: 0)
@@ -37,11 +37,10 @@ func setupPhoneNode() {
         
         phoneNode = SCNNode(geometry: cubeGeometry)
         
-        var phoneLocation = getPointerPosition().pos
         
         //Move in front of screen
-        phoneNode.position = getPositionRelativeToCameraView(distance: 0.0)
-        phoneNode.position = phoneLocation
+        
+        phoneNode.position = getPositionRelativeToCameraView(distance: 1).position
         phoneNode.physicsBody = cubeBody
         
         sceneView.scene.rootNode.addChildNode(phoneNode)
@@ -77,18 +76,17 @@ func getPositionRelativeToCameraView(distance: Float) -> (position: SCNVector3, 
 
 For usability reasons, I traced a vector normal from the phones screen by about 10 cm. 
 
-Apply this code to your phone node during your regular update cycle. In my case: 'renderer(_ renderer: SCNSceneRenderer, updateAtTime time: TimeInterval)'
+Apply this code to your phone node during your regular update cycle. In my case: 'func renderer(_ renderer: SCNSceneRenderer, willRenderScene scene: SCNScene, atTime time: TimeInterval'
+
 
 ```swift
 
 func updatePhoneNode() {
-        
-        //Move in front of screen
-        phoneNode.position = getPositionRelativeToCameraView(distance: 0.1)
-        
-        phoneNode.rotation = getPointerPosition().camPos
-      
-    }
+  //Move in front of screen
+  let phonePositioningInfo = getPositionRelativeToCameraView(distance: 0.1)
+  phoneNode.position = phonePositioningInfo.position
+  phoneNode.rotation = phonePositioningInfo.rotation
+}
 ```
 
 
