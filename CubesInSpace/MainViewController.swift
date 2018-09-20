@@ -57,7 +57,6 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
     let configuration = ARWorldTrackingConfiguration()
     configuration.planeDetection = .horizontal
     
-    
     // Run the view's session
     sceneView.session.run(configuration)
     
@@ -91,6 +90,7 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
     
     // Set the scene to the view
     sceneView.scene = scene
+    scene.physicsWorld.gravity = SCNVector3(0.0, -0.01, 0)
     //sceneView.automaticallyUpdatesLighting = true
     setupGravityField()
   }
@@ -104,8 +104,10 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
   private func setupGroundNode() {
     let groundGeometry = SCNFloor()
     groundGeometry.reflectivity = 0
+    //let floorImage = UIImage(named: "grid")
     let groundMaterial = SCNMaterial()
-    groundMaterial.diffuse.contents = UIColor.clear
+    groundMaterial.diffuse.contents = UIColor.clear 
+    //groundMaterial.diffuse.contents = floorImage
     groundGeometry.materials = [groundMaterial]
     ground = SCNNode(geometry: groundGeometry)
     ground.position = sceneView.scene.rootNode.position - SCNVector3(0,1.5,0)
@@ -200,7 +202,7 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
   func createPlaneNode(anchor: ARPlaneAnchor) -> SCNNode? {
     // Create a SceneKit plane to visualize the node using its position and extent.
     // Create the geometry and its materials
-    let plane = SCNPlane(width: CGFloat(anchor.extent.x), height: CGFloat(anchor.extent.z))
+    let plane = SCNPlane(width: CGFloat(anchor.extent.x/2), height: CGFloat(anchor.extent.z/2))
     
     let gridImage = UIImage(named: "grid")
     let gridMaterial = SCNMaterial()
@@ -357,9 +359,10 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
   
   fileprivate func placeNewCube(_ size: CGFloat, _ currentTime: CFAbsoluteTime) {
     //Initialize cube shape and appearance
-    let cubeGeometry = SCNBox(width: size, height: size, length: size, chamferRadius: 0)
+   let cubeGeometry = SCNBox(width: size, height: size, length: size, chamferRadius: 0)
+    //let cubeGeometry = SCNSphere(radius: size)
     let boxMaterial = SCNMaterial()
-    boxMaterial.diffuse.contents = UIImage(named: "crate")
+    boxMaterial.diffuse.contents = UIImage(named: "IMG_9357.JPG")
     boxMaterial.locksAmbientWithDiffuse = true;
     cubeGeometry.materials = [boxMaterial]
     
@@ -372,6 +375,7 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
     
     //Adding physics to shape, in this case, the cube will have the exact same shape as the node
     let shape = SCNPhysicsShape(geometry: SCNBox(width: size, height: size, length: size, chamferRadius: 0), options: nil)
+   // let shape = SCNPhysicsShape(geometry: SCNSphere(radius: size), options: nil)
     let cubeBody = SCNPhysicsBody(type: .dynamic, shape: shape)
     cubeBody.restitution = 0
     geometryNode.physicsBody = cubeBody
@@ -380,7 +384,9 @@ class MainViewController: UIViewController, ARSCNViewDelegate, UIGestureRecogniz
     geometryNode.physicsBody!.velocity = self.getUserVector()
     geometryNode.physicsBody!.angularVelocity = SCNVector4Make(1, 0, 0, Float(Double.pi/16));
     geometryNode.physicsField = gravityField
-    geometryNode.physicsBody?.isAffectedByGravity = false //using custom gravity field
+    //geometryNode.physicsBody?.mass = -0.1
+    //geometryNode.physicsBody?.damping = 0.5
+    geometryNode.physicsBody?.isAffectedByGravity = true //false //using custom gravity field
     
     lastSpawn = currentTime
   }
